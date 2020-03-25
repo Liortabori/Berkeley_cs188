@@ -18,6 +18,8 @@ Pacman agents (in searchAgents.py).
 """
 
 import util
+from GenericSearch import GenericSearchAlgorythm
+
 
 class SearchProblem:
     """
@@ -86,18 +88,27 @@ def depthFirstSearch(problem):
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    root = problem.getStartState()
+    q = util.Stack()
+    visited = [root]
+    parents = {}
+    return GenericSearchAlgorythm(problem,root,q,visited,parents)
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    root = problem.getStartState()
+    q = util.Queue()
+    visited = [root]
+    parents = {}
+    return GenericSearchAlgorythm(problem,root,q,visited,parents)
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    root = problem.getStartState()
+    q = util.PriorityQueue()
+    visited = [root]
+    parents = {}
+    return GenericSearchAlgorythm(problem,root,q,visited,parents, True)
 
 def nullHeuristic(state, problem=None):
     """
@@ -108,8 +119,11 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    root = problem.getStartState()
+    q = util.PriorityQueueWithFunction(heuristic)
+    visited = [root]
+    parents = {}
+    return GenericSearchAlgorythm(problem,root,q,visited,parents, True, True)
 
 
 # Abbreviations
