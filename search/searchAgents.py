@@ -363,8 +363,14 @@ def cornersHeuristic(state, problem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    #return 0 # trivial solution (solves with cost = 106)
+
+    notVisited = problem.cornersNotVisited
+    dist = []
+    for corner in notVisited:
+        #dist.append(((state[0] - corner[0]) ** 2 + (state[1] - corner[1]) ** 2) ** 0.5) # Euclidean solution (solves with cost = 110)
+        dist.append((abs(state[0] - corner[0]) + abs(state[1] - corner[1]))) # Manhatan solution (solves with cost = 108)
+    return min(dist)
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -457,8 +463,22 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-    return 0
+
+    # return 0 #solves tiny search in ~5 seconds with cost = 27 and tricky in ~52 seconds with cost 60
+    dist_to_food=[]
+    for food in foodGrid.asList():
+        dist = (abs(position[0] - food[0]) + abs(position[1] - food[1]))  # Manhatan solution ( this is stuck in tricky)
+        #dist = ((position[0] - food[0]) ** 2 + (position[1] - food[1]) ** 2) ** 0.5 # Euclidean solution (solves like ucs)
+        if dist <= 1:
+            return dist
+        else:
+            dist_to_food.append(dist)
+
+    if len(dist_to_food)==0:
+        return 0
+    else:
+        return min(dist_to_food)
+
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"

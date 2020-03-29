@@ -18,7 +18,6 @@ def GenericSearchAlgorythm(problem, state, q, visited, parents, priority=False, 
 			prizes += 1
 			parents, newState = GoalSeeking(problem, state, q, [state], {}, priority, heuristic)
 			finalPath.append(createPath(state, parents, newState))
-			print("woho!")
 			state = newState
 			while not q.isEmpty():
 				q.pop()
@@ -45,7 +44,6 @@ def GoalSeeking(problem, state, q, visited, parents, priority, heuristic):
 			return util.raiseNotDefined()
 		else:
 			state = q.pop()[0]
-			print(state)
 
 	return parents, state
 
