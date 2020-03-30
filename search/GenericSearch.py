@@ -30,7 +30,9 @@ def GoalSeeking(problem, state, q, visited, parents, priority, heuristic):
 	while not problem.isGoalState(state):
 		successors = problem.getSuccessors(state)
 		for successor in successors:
-			if not successor[0] in visited:
+			if successor[0] in visited:
+				pass
+			else :
 				if not priority:
 					q.push(successor)
 				else:
@@ -44,7 +46,7 @@ def GoalSeeking(problem, state, q, visited, parents, priority, heuristic):
 			return util.raiseNotDefined()
 		else:
 			state = q.pop()[0]
-
+			#print("current state is : ", state[0])
 	return parents, state
 
 def createPath(startState, parents, endState):

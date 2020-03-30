@@ -393,6 +393,13 @@ class FoodSearchProblem:
         self.startingGameState = startingGameState
         self._expanded = 0 # DO NOT CHANGE
         self.heuristicInfo = {} # A dictionary for the heuristic to store information
+        ##Store some items
+        self.heuristicInfo['corners'] = ((1, 1), (1, self.walls.height - 2), (self.walls.width - 2, 1),(self.walls.width - 2, self.walls.height - 2))
+        self.heuristicInfo['cornerFood'] = findCornerFood(self.heuristicInfo['corners'], startingGameState.getFood().asList(), "Manhatan")
+        self.heuristicInfo['cornersNotVisited']= self.heuristicInfo['cornerFood']
+        self.heuristicInfo['constant'] = sumRemainingCornerDistance(self.heuristicInfo['cornerFood'])
+        self.heuristicInfo['midTermGoal'] = findOppositeCouples(startingGameState.getFood().asList())
+        self.heuristicInfo['currentGoal'] = findCurrentGoal(self.heuristicInfo['midTermGoal'],startingGameState.getPacmanPosition())
 
     def getStartState(self):
         return self.start
@@ -463,22 +470,134 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-
     # return 0 #solves tiny search in ~5 seconds with cost = 27 and tricky in ~52 seconds with cost 60
-    dist_to_food=[]
-    for food in foodGrid.asList():
-        dist = (abs(position[0] - food[0]) + abs(position[1] - food[1]))  # Manhatan solution ( this is stuck in tricky)
-        #dist = ((position[0] - food[0]) ** 2 + (position[1] - food[1]) ** 2) ** 0.5 # Euclidean solution (solves like ucs)
-        if dist <= 1:
-            return dist
-        else:
-            dist_to_food.append(dist)
 
-    if len(dist_to_food)==0:
+    if position in problem.heuristicInfo['cornersNotVisited']:
+        problem.heuristicInfo['cornersNotVisited'].remove(position)
+        problem.heuristicInfo['constant'] = sumRemainingCornerDistance(problem.heuristicInfo['cornersNotVisited'])
+        #print(position, " was found")
+        return 0
+
+    #closestGoal = problem.heuristicInfo['midTermGoal'][0][0]
+
+    closestGoal = problem.heuristicInfo['currentGoal']
+    #if position != closestGoal:
+    #    dist_to_mid_goal = (abs(position[0] - closestGoal[0]) + abs(position[1] - closestGoal[1]))
+    dist_to_food = []
+    for food in foodGrid.asList():
+        dist = (abs(position[0] - food[0]) + abs(position[1] - food[1]))  # Manhatan solution
+        # dist = ((position[0] - food[0]) ** 2 + (position[1] - food[1]) ** 2) ** 0.5 # Euclidean solution
+        # if dist <= 1:
+        #     return (problem.heuristicInfo['constant']+1) * len(foodGrid.asList())/len(problem.startingGameState.getFood().asList())
+        # else:
+        dist_to_food.append(dist)
+
+    if len(dist_to_food) == 0:
         return 0
     else:
-        return min(dist_to_food)
+        #return (problem.heuristicInfo['constant']+ dist_to_mid_goal**2)*(sum(dist_to_food) * len(foodGrid.asList())/len(problem.startingGameState.getFood().asList()))
+        return (problem.heuristicInfo['constant']) * (sum(dist_to_food) * len(foodGrid.asList()) / len(problem.startingGameState.getFood().asList()))
+    # else:
+    #     print(closestGoal, " was achived")
+    #     if len(foodGrid.asList()) > 1:
+    #         problem.heuristicInfo['midTermGoal'] = findOppositeCouples(foodGrid.asList())
+    #         problem.heuristicInfo['currentGoal'] = findCurrentGoal(problem.heuristicInfo['midTermGoal'],position)
+    #     return 0
 
+
+
+
+
+#[d**0.5 for d in dist_to_food]
+    # flag = 1
+    # counter = problem.heuristicInfo['counterSinceLastFood']
+    # problem.heuristicInfo['counterSinceLastFood'] += 1
+    # # if position in problem.heuristicInfo['visitedPositions']:
+    # #     flag = 2
+    # # else:
+    # #     problem.heuristicInfo['visitedPositions'].append(position)
+    #
+    #
+    # if position in problem.heuristicInfo['cornersNotVisited']:
+    #     #print(problem.heuristicInfo['cornersNotVisited'])
+    #     problem.heuristicInfo['cornersNotVisited'].remove(position)
+    #     problem.heuristicInfo['counterSinceLastFood'] = 0
+    #     #print(position, " was found")
+    #     return 0
+    #
+    #
+    # if position in problem.heuristicInfo['foodLeft']:
+    #     flag = len(problem.heuristicInfo['foodLeft'])/len(problem.startingGameState.getFood().asList())
+    #     problem.heuristicInfo['foodLeft'].remove(position)
+    #
+    #
+    # dist=[]
+    # for point in problem.heuristicInfo['cornersNotVisited']:
+    #     dist.append(abs(position[0] - point[0]) + abs(position[1] - point[1])) #manhatan
+    #     #dist.append(((position[0] - point[0]) ** 2 + (position[1] - point[1]) ** 2) ** 0.5) #Euclidean
+    # #problem.heuristicInfo['closestCorner'] = 0
+    # #problem.heuristicInfo['closestCornerFood'] = 0
+    # #problem.heuristicInfo['clustersOfFood'] = 0
+    # if len(dist) == 0:
+    #     return 0
+    # else:
+    #     ans = sum(dist) * flag * counter
+    # #print(ans)
+    # return ans
+
+def findCornerFood(corners,foodGrid, metric="Manhatan"):
+    extremePoints=[]
+    midScreen = (max([c[0] for c in corners])/2,max([c[1] for c in corners])/2)
+    for corner in corners:
+        distToCorner = {}
+        for food in foodGrid:
+            if abs(food[0] - corner[0]) >= midScreen[0] or abs(food[1] - corner[1]) >= midScreen[1]:
+                #print("for example ", food, corner)
+                continue
+            if metric == "Manhatan":
+                distToCorner[food] = abs(food[0] - corner[0]) + abs(food[1] - corner[1])
+            elif metric == "Euclidean":
+                distToCorner[food] =((food[0] - corner[0]) ** 2 + (food[1] - corner[1]) ** 2) ** 0.5
+            else:
+                util.raiseNotDefined("metric is not defined")
+            if distToCorner[food] == 0:
+                break
+        if len(distToCorner.keys())==0:
+            continue
+        else:
+            closestPoint = min(distToCorner, key=distToCorner.get)
+            extremePoints.append(closestPoint)
+
+    return extremePoints
+
+def sumRemainingCornerDistance(corners,metric="Manhatan"):
+    sum=0
+    for c in range(1,len(corners)):
+        if metric == "Manhatan":
+            sum += abs(corners[c][0] - corners[c-1][0]) + abs(corners[c][1] - corners[c-1][1])
+        elif metric == "Euclidean":
+            sum += ((corners[c][0] - corners[c-1][0]) ** 2 + (corners[c][1] - corners[c-1][1]) ** 2) ** 0.5
+        else:
+            util.raiseNotDefined("metric is not defined")
+    return sum
+
+def findOppositeCouples(food):
+    coupels= []
+    for f1 in range(len(food)-1):
+        for f2 in range(f1+1,len(food)):
+            coupels.append((food[f1],food[f2],abs(food[f1][0]-food[f2][0]) + abs(food[f1][1]-food[f2][1])))
+
+    opposite = sorted(coupels, key=lambda x: x[2], reverse=True)
+    maxDist = opposite[0][2]
+    return [o for o in opposite if o[2]==maxDist]
+
+def findCurrentGoal(goals,state):
+    dist_to_goal = []
+    for goal in goals:
+        dist_to_goal.append((goal[0], abs(goal[0][0] - state[0]) + abs(goal[0][1] - state[1])))
+        dist_to_goal.append((goal[1], abs(goal[1][0] - state[0]) + abs(goal[1][1] - state[1])))
+
+    return sorted(dist_to_goal, key=lambda x: x[1])[0][0]
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
