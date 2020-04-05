@@ -478,15 +478,13 @@ def foodHeuristic(state, problem):
         #print(position, " was found")
         return 0
 
-    #closestGoal = problem.heuristicInfo['midTermGoal'][0][0]
-
-    closestGoal = problem.heuristicInfo['currentGoal']
+    #closestGoal = problem.heuristicInfo['currentGoal']
     #if position != closestGoal:
     #    dist_to_mid_goal = (abs(position[0] - closestGoal[0]) + abs(position[1] - closestGoal[1]))
     dist_to_food = []
     for food in foodGrid.asList():
-        dist = (abs(position[0] - food[0]) + abs(position[1] - food[1]))  # Manhatan solution
-        # dist = ((position[0] - food[0]) ** 2 + (position[1] - food[1]) ** 2) ** 0.5 # Euclidean solution
+        #dist = (abs(position[0] - food[0]) + abs(position[1] - food[1]))  # Manhatan solution
+        dist = ((position[0] - food[0]) ** 2 + (position[1] - food[1]) ** 2) ** 0.5 # Euclidean solution
         # if dist <= 1:
         #     return (problem.heuristicInfo['constant']+1) * len(foodGrid.asList())/len(problem.startingGameState.getFood().asList())
         # else:
